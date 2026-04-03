@@ -2597,24 +2597,34 @@ function deserializeNullLiteral(pos) {
 }
 
 function deserializeNumericLiteral(pos) {
+  let start = deserializeU32(pos),
+    end = deserializeU32(pos + 4);
   return {
     type: "Literal",
     value: deserializeF64(pos + 32),
-    raw: deserializeOptionStr(pos + 16),
-    start: deserializeU32(pos),
-    end: deserializeU32(pos + 4),
+    raw:
+      uint32[(pos + 16) >> 2] === 0 && uint32[(pos + 20) >> 2] === 0
+        ? null
+        : sourceText.slice(start, end),
+    start,
+    end,
     parent,
   };
 }
 
 function deserializeStringLiteral(pos) {
-  let previousParent = parent,
+  let start = deserializeU32(pos),
+    end = deserializeU32(pos + 4),
+    previousParent = parent,
     node = (parent = {
       type: "Literal",
       value: null,
-      raw: deserializeOptionStr(pos + 32),
-      start: deserializeU32(pos),
-      end: deserializeU32(pos + 4),
+      raw:
+        uint32[(pos + 32) >> 2] === 0 && uint32[(pos + 36) >> 2] === 0
+          ? null
+          : sourceText.slice(start, end),
+      start,
+      end,
       parent,
     }),
     value = deserializeStr(pos + 16);
@@ -2626,14 +2636,19 @@ function deserializeStringLiteral(pos) {
 }
 
 function deserializeBigIntLiteral(pos) {
-  let previousParent = parent,
+  let start = deserializeU32(pos),
+    end = deserializeU32(pos + 4),
+    previousParent = parent,
     node = (parent = {
       type: "Literal",
       value: null,
-      raw: deserializeOptionStr(pos + 32),
+      raw:
+        uint32[(pos + 32) >> 2] === 0 && uint32[(pos + 36) >> 2] === 0
+          ? null
+          : sourceText.slice(start, end),
       bigint: null,
-      start: deserializeU32(pos),
-      end: deserializeU32(pos + 4),
+      start,
+      end,
       parent,
     }),
     bigint = deserializeStr(pos + 16);
@@ -2644,14 +2659,19 @@ function deserializeBigIntLiteral(pos) {
 }
 
 function deserializeRegExpLiteral(pos) {
-  let previousParent = parent,
+  let start = deserializeU32(pos),
+    end = deserializeU32(pos + 4),
+    previousParent = parent,
     node = (parent = {
       type: "Literal",
       value: null,
-      raw: deserializeOptionStr(pos + 48),
+      raw:
+        uint32[(pos + 48) >> 2] === 0 && uint32[(pos + 52) >> 2] === 0
+          ? null
+          : sourceText.slice(start, end),
       regex: null,
-      start: deserializeU32(pos),
-      end: deserializeU32(pos + 4),
+      start,
+      end,
       parent,
     }),
     regex = deserializeRegExp(pos + 16),
@@ -3100,12 +3120,17 @@ function deserializeJSXSpreadChild(pos) {
 }
 
 function deserializeJSXText(pos) {
+  let start = deserializeU32(pos),
+    end = deserializeU32(pos + 4);
   return {
     type: "JSXText",
     value: deserializeStr(pos + 16),
-    raw: deserializeOptionStr(pos + 32),
-    start: deserializeU32(pos),
-    end: deserializeU32(pos + 4),
+    raw:
+      uint32[(pos + 32) >> 2] === 0 && uint32[(pos + 36) >> 2] === 0
+        ? null
+        : sourceText.slice(start, end),
+    start,
+    end,
     parent,
   };
 }
@@ -5091,8 +5116,9 @@ function deserializeVecComment(pos) {
 }
 
 function deserializeOptionHashbang(pos) {
-  if (uint32[(pos + 16) >> 2] === 0 && uint32[(pos + 20) >> 2] === 0) return null;
-  return deserializeHashbang(pos);
+  return uint32[(pos + 16) >> 2] === 0 && uint32[(pos + 20) >> 2] === 0
+    ? null
+    : deserializeHashbang(pos);
 }
 
 function deserializeVecDirective(pos) {
@@ -5352,13 +5378,13 @@ function deserializeBoxTSTypeParameterInstantiation(pos) {
 }
 
 function deserializeOptionBoxTSTypeParameterInstantiation(pos) {
-  if (uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0) return null;
-  return deserializeBoxTSTypeParameterInstantiation(pos);
+  return uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0
+    ? null
+    : deserializeBoxTSTypeParameterInstantiation(pos);
 }
 
 function deserializeOptionStr(pos) {
-  if (uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0) return null;
-  return deserializeStr(pos);
+  return uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0 ? null : deserializeStr(pos);
 }
 
 function deserializeBoxComputedMemberExpression(pos) {
@@ -5394,8 +5420,7 @@ function deserializeBoxObjectAssignmentTarget(pos) {
 }
 
 function deserializeOptionAssignmentTargetMaybeDefault(pos) {
-  if (uint8[pos] === 51) return null;
-  return deserializeAssignmentTargetMaybeDefault(pos);
+  return uint8[pos] === 51 ? null : deserializeAssignmentTargetMaybeDefault(pos);
 }
 
 function deserializeVecOptionAssignmentTargetMaybeDefault(pos) {
@@ -5415,8 +5440,9 @@ function deserializeBoxAssignmentTargetRest(pos) {
 }
 
 function deserializeOptionBoxAssignmentTargetRest(pos) {
-  if (uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0) return null;
-  return deserializeBoxAssignmentTargetRest(pos);
+  return uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0
+    ? null
+    : deserializeBoxAssignmentTargetRest(pos);
 }
 
 function deserializeVecAssignmentTargetProperty(pos) {
@@ -5444,8 +5470,7 @@ function deserializeBoxAssignmentTargetPropertyProperty(pos) {
 }
 
 function deserializeOptionExpression(pos) {
-  if (uint8[pos] === 51) return null;
-  return deserializeExpression(pos);
+  return uint8[pos] === 51 ? null : deserializeExpression(pos);
 }
 
 function deserializeBoxBlockStatement(pos) {
@@ -5565,23 +5590,23 @@ function deserializeBoxTSTypeAnnotation(pos) {
 }
 
 function deserializeOptionBoxTSTypeAnnotation(pos) {
-  if (uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0) return null;
-  return deserializeBoxTSTypeAnnotation(pos);
+  return uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0
+    ? null
+    : deserializeBoxTSTypeAnnotation(pos);
 }
 
 function deserializeOptionStatement(pos) {
-  if (uint8[pos] === 70) return null;
-  return deserializeStatement(pos);
+  return uint8[pos] === 70 ? null : deserializeStatement(pos);
 }
 
 function deserializeOptionForStatementInit(pos) {
-  if (uint8[pos] === 65) return null;
-  return deserializeForStatementInit(pos);
+  return uint8[pos] === 65 ? null : deserializeForStatementInit(pos);
 }
 
 function deserializeOptionLabelIdentifier(pos) {
-  if (uint32[(pos + 16) >> 2] === 0 && uint32[(pos + 20) >> 2] === 0) return null;
-  return deserializeLabelIdentifier(pos);
+  return uint32[(pos + 16) >> 2] === 0 && uint32[(pos + 20) >> 2] === 0
+    ? null
+    : deserializeLabelIdentifier(pos);
 }
 
 function deserializeVecSwitchCase(pos) {
@@ -5601,18 +5626,19 @@ function deserializeBoxCatchClause(pos) {
 }
 
 function deserializeOptionBoxCatchClause(pos) {
-  if (uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0) return null;
-  return deserializeBoxCatchClause(pos);
+  return uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0
+    ? null
+    : deserializeBoxCatchClause(pos);
 }
 
 function deserializeOptionBoxBlockStatement(pos) {
-  if (uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0) return null;
-  return deserializeBoxBlockStatement(pos);
+  return uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0
+    ? null
+    : deserializeBoxBlockStatement(pos);
 }
 
 function deserializeOptionCatchParameter(pos) {
-  if (uint8[pos + 16] === 4) return null;
-  return deserializeCatchParameter(pos);
+  return uint8[pos + 16] === 4 ? null : deserializeCatchParameter(pos);
 }
 
 function deserializeBoxBindingIdentifier(pos) {
@@ -5648,13 +5674,13 @@ function deserializeBoxBindingRestElement(pos) {
 }
 
 function deserializeOptionBoxBindingRestElement(pos) {
-  if (uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0) return null;
-  return deserializeBoxBindingRestElement(pos);
+  return uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0
+    ? null
+    : deserializeBoxBindingRestElement(pos);
 }
 
 function deserializeOptionBindingPattern(pos) {
-  if (uint8[pos] === 4) return null;
-  return deserializeBindingPattern(pos);
+  return uint8[pos] === 4 ? null : deserializeBindingPattern(pos);
 }
 
 function deserializeVecOptionBindingPattern(pos) {
@@ -5670,8 +5696,9 @@ function deserializeVecOptionBindingPattern(pos) {
 }
 
 function deserializeOptionBindingIdentifier(pos) {
-  if (uint32[(pos + 16) >> 2] === 0 && uint32[(pos + 20) >> 2] === 0) return null;
-  return deserializeBindingIdentifier(pos);
+  return uint32[(pos + 16) >> 2] === 0 && uint32[(pos + 20) >> 2] === 0
+    ? null
+    : deserializeBindingIdentifier(pos);
 }
 
 function deserializeBoxTSTypeParameterDeclaration(pos) {
@@ -5679,8 +5706,9 @@ function deserializeBoxTSTypeParameterDeclaration(pos) {
 }
 
 function deserializeOptionBoxTSTypeParameterDeclaration(pos) {
-  if (uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0) return null;
-  return deserializeBoxTSTypeParameterDeclaration(pos);
+  return uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0
+    ? null
+    : deserializeBoxTSTypeParameterDeclaration(pos);
 }
 
 function deserializeBoxTSThisParameter(pos) {
@@ -5688,8 +5716,9 @@ function deserializeBoxTSThisParameter(pos) {
 }
 
 function deserializeOptionBoxTSThisParameter(pos) {
-  if (uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0) return null;
-  return deserializeBoxTSThisParameter(pos);
+  return uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0
+    ? null
+    : deserializeBoxTSThisParameter(pos);
 }
 
 function deserializeBoxFormalParameters(pos) {
@@ -5701,8 +5730,9 @@ function deserializeBoxFunctionBody(pos) {
 }
 
 function deserializeOptionBoxFunctionBody(pos) {
-  if (uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0) return null;
-  return deserializeBoxFunctionBody(pos);
+  return uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0
+    ? null
+    : deserializeBoxFunctionBody(pos);
 }
 
 function deserializeVecFormalParameter(pos) {
@@ -5734,8 +5764,9 @@ function deserializeBoxExpression(pos) {
 }
 
 function deserializeOptionBoxExpression(pos) {
-  if (uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0) return null;
-  return deserializeBoxExpression(pos);
+  return uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0
+    ? null
+    : deserializeBoxExpression(pos);
 }
 
 function deserializeBoxClassBody(pos) {
@@ -5799,8 +5830,7 @@ function deserializeBoxTSNamespaceExportDeclaration(pos) {
 }
 
 function deserializeOptionImportPhase(pos) {
-  if (uint8[pos] === 2) return null;
-  return deserializeImportPhase(pos);
+  return uint8[pos] === 2 ? null : deserializeImportPhase(pos);
 }
 
 function deserializeVecImportDeclarationSpecifier(pos) {
@@ -5816,8 +5846,9 @@ function deserializeVecImportDeclarationSpecifier(pos) {
 }
 
 function deserializeOptionVecImportDeclarationSpecifier(pos) {
-  if (uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0) return null;
-  return deserializeVecImportDeclarationSpecifier(pos);
+  return uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0
+    ? null
+    : deserializeVecImportDeclarationSpecifier(pos);
 }
 
 function deserializeBoxWithClause(pos) {
@@ -5825,8 +5856,9 @@ function deserializeBoxWithClause(pos) {
 }
 
 function deserializeOptionBoxWithClause(pos) {
-  if (uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0) return null;
-  return deserializeBoxWithClause(pos);
+  return uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0
+    ? null
+    : deserializeBoxWithClause(pos);
 }
 
 function deserializeBoxImportSpecifier(pos) {
@@ -5854,8 +5886,7 @@ function deserializeVecImportAttribute(pos) {
 }
 
 function deserializeOptionDeclaration(pos) {
-  if (uint8[pos] === 31) return null;
-  return deserializeDeclaration(pos);
+  return uint8[pos] === 31 ? null : deserializeDeclaration(pos);
 }
 
 function deserializeVecExportSpecifier(pos) {
@@ -5871,13 +5902,11 @@ function deserializeVecExportSpecifier(pos) {
 }
 
 function deserializeOptionStringLiteral(pos) {
-  if (uint8[pos + 12] === 2) return null;
-  return deserializeStringLiteral(pos);
+  return uint8[pos + 12] === 2 ? null : deserializeStringLiteral(pos);
 }
 
 function deserializeOptionModuleExportName(pos) {
-  if (uint8[pos] === 3) return null;
-  return deserializeModuleExportName(pos);
+  return uint8[pos] === 3 ? null : deserializeModuleExportName(pos);
 }
 
 function deserializeF64(pos) {
@@ -5909,8 +5938,9 @@ function deserializeBoxJSXClosingElement(pos) {
 }
 
 function deserializeOptionBoxJSXClosingElement(pos) {
-  if (uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0) return null;
-  return deserializeBoxJSXClosingElement(pos);
+  return uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0
+    ? null
+    : deserializeBoxJSXClosingElement(pos);
 }
 
 function deserializeVecJSXAttributeItem(pos) {
@@ -5946,8 +5976,7 @@ function deserializeBoxJSXSpreadAttribute(pos) {
 }
 
 function deserializeOptionJSXAttributeValue(pos) {
-  if (uint8[pos] === 4) return null;
-  return deserializeJSXAttributeValue(pos);
+  return uint8[pos] === 4 ? null : deserializeJSXAttributeValue(pos);
 }
 
 function deserializeBoxJSXExpressionContainer(pos) {
@@ -6159,8 +6188,7 @@ function deserializeBoxTSQualifiedName(pos) {
 }
 
 function deserializeOptionTSType(pos) {
-  if (uint8[pos] === 38) return null;
-  return deserializeTSType(pos);
+  return uint8[pos] === 38 ? null : deserializeTSType(pos);
 }
 
 function deserializeVecTSTypeParameter(pos) {
@@ -6232,8 +6260,7 @@ function deserializeVecTSIndexSignatureName(pos) {
 }
 
 function deserializeOptionTSModuleDeclarationBody(pos) {
-  if (uint8[pos] === 2) return null;
-  return deserializeTSModuleDeclarationBody(pos);
+  return uint8[pos] === 2 ? null : deserializeTSModuleDeclarationBody(pos);
 }
 
 function deserializeBoxTSModuleBlock(pos) {
@@ -6245,13 +6272,13 @@ function deserializeBoxTSTypeParameter(pos) {
 }
 
 function deserializeOptionBoxObjectExpression(pos) {
-  if (uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0) return null;
-  return deserializeBoxObjectExpression(pos);
+  return uint32[pos >> 2] === 0 && uint32[(pos + 4) >> 2] === 0
+    ? null
+    : deserializeBoxObjectExpression(pos);
 }
 
 function deserializeOptionTSImportTypeQualifier(pos) {
-  if (uint8[pos] === 2) return null;
-  return deserializeTSImportTypeQualifier(pos);
+  return uint8[pos] === 2 ? null : deserializeTSImportTypeQualifier(pos);
 }
 
 function deserializeBoxTSImportTypeQualifiedName(pos) {
@@ -6259,8 +6286,7 @@ function deserializeBoxTSImportTypeQualifiedName(pos) {
 }
 
 function deserializeOptionTSMappedTypeModifierOperator(pos) {
-  if (uint8[pos] === 3) return null;
-  return deserializeTSMappedTypeModifierOperator(pos);
+  return uint8[pos] === 3 ? null : deserializeTSMappedTypeModifierOperator(pos);
 }
 
 function deserializeBoxTSExternalModuleReference(pos) {
@@ -6272,8 +6298,9 @@ function deserializeU32(pos) {
 }
 
 function deserializeOptionNameSpan(pos) {
-  if (uint32[(pos + 8) >> 2] === 0 && uint32[(pos + 12) >> 2] === 0) return null;
-  return deserializeNameSpan(pos);
+  return uint32[(pos + 8) >> 2] === 0 && uint32[(pos + 12) >> 2] === 0
+    ? null
+    : deserializeNameSpan(pos);
 }
 
 function deserializeVecError(pos) {

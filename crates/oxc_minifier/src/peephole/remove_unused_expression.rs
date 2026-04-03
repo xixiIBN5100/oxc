@@ -298,20 +298,19 @@ impl<'a> PeepholeOptimizations {
                 return false;
             }
             for element in &class.body.body {
-                if let ClassElement::MethodDefinition(method) = element {
-                    if method.kind == MethodDefinitionKind::Constructor {
-                        return false;
-                    }
+                if let ClassElement::MethodDefinition(method) = element
+                    && method.kind == MethodDefinitionKind::Constructor
+                {
+                    return false;
                 }
             }
         } else {
             for element in &class.body.body {
-                if let ClassElement::MethodDefinition(method) = element {
-                    if method.kind == MethodDefinitionKind::Constructor
-                        && method.value.body.as_ref().is_some_and(|b| !b.statements.is_empty())
-                    {
-                        return false;
-                    }
+                if let ClassElement::MethodDefinition(method) = element
+                    && method.kind == MethodDefinitionKind::Constructor
+                    && method.value.body.as_ref().is_some_and(|b| !b.statements.is_empty())
+                {
+                    return false;
                 }
             }
         }
